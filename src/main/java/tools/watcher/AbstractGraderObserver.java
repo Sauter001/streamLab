@@ -1,5 +1,7 @@
 package tools.watcher;
 
+import util.ErrorLogger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -92,7 +94,7 @@ public abstract class AbstractGraderObserver implements GraderObserver {
 
             return true;
         } catch (Exception e) {
-            System.err.println("❌ 컴파일 프로세스 실행 실패: " + e.getMessage());
+            ErrorLogger.system("컴파일 프로세스 실행 실패", e);
             return false;
         }
     }

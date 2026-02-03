@@ -9,6 +9,7 @@ import tools.validator.CompositeValidator;
 import tools.validator.NoVariableDeclarationValidator;
 import tools.validator.SingleStatementValidator;
 import ui.view.grading.GradingView;
+import util.ErrorLogger;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -52,7 +53,7 @@ public class TutorialGraderObserver extends AbstractGraderObserver {
         view.displayGradingStart(filePath.getFileName().toString());
 
         if (!compileSource()) {
-            System.err.println("❌ 컴파일 실패. 문법 오류를 확인하세요.");
+            ErrorLogger.user("컴파일 실패. 문법 오류를 확인하세요.");
             return;
         }
 
@@ -91,8 +92,7 @@ public class TutorialGraderObserver extends AbstractGraderObserver {
             return passedTests == totalTests;
 
         } catch (Exception e) {
-            System.err.println("❌ 메서드 채점 중 오류 발생 " + methodTest.getName() + ": " + e.getMessage());
-            e.printStackTrace();
+            ErrorLogger.user("메서드 채점 중 오류 발생 " + methodTest.getName() + ": " + e.getMessage());
             return false;
         }
     }
@@ -127,9 +127,9 @@ public class TutorialGraderObserver extends AbstractGraderObserver {
 
             System.out.println();
         } catch (ClassNotFoundException e) {
-            System.err.println("❌ 오류: Tutorial 클래스를 찾을 수 없습니다. 프로젝트가 컴파일되었는지 확인하세요.");
+            ErrorLogger.user("Tutorial 클래스를 찾을 수 없습니다. 프로젝트가 컴파일되었는지 확인하세요.");
         } catch (Exception e) {
-            System.err.println("❌ 테스트 케이스 실행 중 오류 발생: " + e.getMessage());
+            ErrorLogger.user("테스트 케이스 실행 중 오류 발생: " + e.getMessage());
         }
 
         return passed;

@@ -9,6 +9,7 @@ import tools.grader.level.LevelGrader;
 import tools.grader.level.LevelTestData;
 import ui.view.grading.LevelGradingView;
 import ui.view.grading.LevelGradingView.ProblemGradeResult;
+import util.ErrorLogger;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -65,7 +66,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
             view.displayGradingStart(filePath.getFileName().toString());
 
             if (!compileSource()) {
-                System.err.println("❌ 컴파일 실패. 문법 오류를 확인하세요.");
+                ErrorLogger.user("컴파일 실패. 문법 오류를 확인하세요.");
                 return;
             }
 
@@ -97,13 +98,13 @@ public class LevelGraderObserver extends AbstractGraderObserver {
             }
 
         } catch (ClassNotFoundException e) {
-            System.err.println("❌ Level" + level + " 클래스를 찾을 수 없습니다. 프로젝트가 컴파일되었는지 확인하세요.");
+            ErrorLogger.user("Level" + level + " 클래스를 찾을 수 없습니다. 프로젝트가 컴파일되었는지 확인하세요.");
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("컴파일")) {
-                System.err.println("❌ " + msg);
+                ErrorLogger.user(msg);
             } else {
-                System.err.println("❌ 채점 중 오류 발생: " + msg);
+                ErrorLogger.user("채점 중 오류 발생: " + msg);
             }
         }
     }

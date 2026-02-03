@@ -1,5 +1,7 @@
 package tools.watcher;
 
+import util.ErrorLogger;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -74,8 +76,7 @@ public class FileWatcher implements Runnable {
                 }
             }
         } catch (IOException e) {
-            System.err.println("파일 감시 시작 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
+            ErrorLogger.system("파일 감시 시작 중 오류 발생", e);
         }
     }
 
@@ -90,7 +91,7 @@ public class FileWatcher implements Runnable {
                                 StandardWatchEventKinds.ENTRY_MODIFY
                         );
                     } catch (IOException e) {
-                        System.err.println("디렉토리 등록 중 오류 발생: " + path);
+                        ErrorLogger.system("디렉토리 등록 중 오류 발생: " + path);
                     }
                 });
     }
