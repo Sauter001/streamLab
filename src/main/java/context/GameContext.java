@@ -85,13 +85,7 @@ public class GameContext {
     private void clearCurrentObserver() {
         if (currentObserver != null) {
             fileWatcher.removeObserver(currentObserver);
-
-            if (currentObserver instanceof TutorialGraderObserver tutorialObserver) {
-                tutorialObserver.shutdown();
-            } else if (currentObserver instanceof LevelGraderObserver levelObserver) {
-                levelObserver.shutdown();
-            }
-
+            currentObserver.shutdown();
             currentObserver = null;
         }
     }

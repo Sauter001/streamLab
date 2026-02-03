@@ -10,136 +10,83 @@ import tools.validator.NoVariableDeclarationValidator;
 import tools.validator.SingleStatementValidator;
 import ui.view.grading.GradingView;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TutorialGraderObserver implements GraderObserver {
+public class TutorialGraderObserver extends AbstractGraderObserver {
     private static final String TUTORIAL_CLASS = "solutions.tutorial.Tutorial";
     private static final String TEST_DATA_PATH = "data/test-data/tutorial/tutorial.json";
-    private static final long DEBOUNCE_DELAY_SECONDS = 2;
     public static final String TUTORIAL_JAVA_FILE = "Tutorial.java";
 
     private final TutorialTestData testData;
     private final CompositeValidator validator;
-    private final ScheduledExecutorService scheduler;
     private final GradingView view;
     private final GameContext gameContext;
-    private ScheduledFuture<?> pendingGrade;
-    private final AtomicBoolean isGrading = new AtomicBoolean(false);
 
     public TutorialGraderObserver(GradingView view, GameContext gameContext) {
+        super(TUTORIAL_JAVA_FILE, "GraderScheduler");
         this.view = view;
         this.gameContext = gameContext;
         try {
-            // 테스트 데이터 로드
             ObjectMapper mapper = new ObjectMapper();
             this.testData = mapper.readValue(new File(TEST_DATA_PATH), TutorialTestData.class);
 
-            // Validator 생성
             this.validator = ViolationFactory.createStrictestValidator()
                     .add(new SingleStatementValidator())
                     .add(new NoVariableDeclarationValidator());
-
-            // Debouncing용 스케줄러 생성
-            this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread thread = new Thread(r, "GraderScheduler");
-                thread.setDaemon(true);
-                return thread;
-            });
         } catch (Exception e) {
             throw new RuntimeException("TutorialGraderObserver 초기화 실패", e);
         }
     }
 
     @Override
-    public void onFileChanged(Path filePath) {
-        String fileName = filePath.getFileName().toString();
-
-        // Tutorial.java만 처리
-        if (!fileName.equals(TUTORIAL_JAVA_FILE)) {
-            return;
-        }
-
-        // 이전 대기 중인 채점이 있으면 취소
-        if (pendingGrade != null && !pendingGrade.isDone()) {
-            pendingGrade.cancel(false);
-        }
-
+    protected void onFileChangeDetected() {
         view.displayFileChangeDetected();
-
-        // Debounce 지연 후 채점 예약
-        pendingGrade = scheduler.schedule(() -> {
-            executeGrading(filePath);
-        }, DEBOUNCE_DELAY_SECONDS, TimeUnit.SECONDS);
     }
 
-    private void executeGrading(Path filePath) {
-        if (!isGrading.compareAndSet(false, true)) {
-            return;
-        }
-
+    @Override
+    protected void executeGrading(Path filePath) {
         view.displayGradingStart(filePath.getFileName().toString());
 
-        // 소스 파일 컴파일
         if (!compileSource()) {
             System.err.println("❌ 컴파일 실패. 문법 오류를 확인하세요.");
-            isGrading.set(false);
             return;
         }
 
         int totalMethods = testData.getMethods().size();
         int completedMethods = 0;
 
-        // 각 메서드 채점
         for (TutorialTestData.MethodTest methodTest : testData.getMethods()) {
             if (gradeMethod(methodTest, filePath.toFile())) {
                 completedMethods++;
             }
         }
 
-        // 모든 메서드가 완료되면 튜토리얼 완료 표시
         if (completedMethods == totalMethods) {
             gameContext.setTutorialCompleted(true);
         }
-
-        isGrading.set(false);
     }
 
     private boolean gradeMethod(TutorialTestData.MethodTest methodTest, File sourceFile) {
         view.displayMethodHeader(methodTest.getName(), methodTest.getDescription());
 
         try {
-            // Grader 생성
             TutorialGrader grader = new TutorialGrader(validator, 5);
 
-            // 코드 구조 검증
             TutorialGrader.GradeResult gradeResult = grader.gradeMethod(sourceFile, methodTest.getName());
 
-            // 검증 실패 시 에러 표시하고 테스트 건너뛰기
             if (!gradeResult.isValid()) {
                 view.displayFinalResult(gradeResult, 0, methodTest.getTestCases().size());
                 return false;
             }
 
-            // 테스트 케이스 실행
             int passedTests = runTestCases(methodTest);
             int totalTests = methodTest.getTestCases().size();
 
-            // 결과 표시
             view.displayFinalResult(gradeResult, passedTests, totalTests);
 
-            // 모든 테스트 통과 시 true 반환
             return passedTests == totalTests;
 
         } catch (Exception e) {
@@ -149,52 +96,12 @@ public class TutorialGraderObserver implements GraderObserver {
         }
     }
 
-    private boolean compileSource() {
-        try {
-            String os = System.getProperty("os.name").toLowerCase();
-            String gradleCommand = os.contains("win") ? "gradlew.bat" : "./gradlew";
-
-            ProcessBuilder pb = new ProcessBuilder(gradleCommand, "compileJava", "-q");
-            pb.redirectErrorStream(true);
-            pb.directory(new File(System.getProperty("user.dir")));
-
-            Process process = pb.start();
-
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
-            }
-
-            int exitCode = process.waitFor();
-
-            if (exitCode != 0) {
-                System.err.println(output.toString().trim());
-                return false;
-            }
-
-            return true;
-        } catch (Exception e) {
-            System.err.println("❌ 컴파일 프로세스 실행 실패: " + e.getMessage());
-            return false;
-        }
-    }
-
     private int runTestCases(TutorialTestData.MethodTest methodTest) {
         int passed = 0;
         int testNum = 1;
 
         try {
-            String classFilePath = TUTORIAL_CLASS.replace('.', '/') + ".class";
-            Path classesDir = Paths.get("build/classes/java/main").toAbsolutePath();
-            Path classFile = classesDir.resolve(classFilePath);
-
-            byte[] classBytes = Files.readAllBytes(classFile);
-            ByteArrayClassLoader classLoader = new ByteArrayClassLoader(getClass().getClassLoader(), TUTORIAL_CLASS, classBytes);
-
-            Class<?> tutorialClass = classLoader.loadClass(TUTORIAL_CLASS);
+            Class<?> tutorialClass = loadClass(TUTORIAL_CLASS);
             Method method = tutorialClass.getMethod(methodTest.getName(), List.class);
 
             view.displayTestStart();
@@ -225,20 +132,5 @@ public class TutorialGraderObserver implements GraderObserver {
         }
 
         return passed;
-    }
-
-    public void shutdown() {
-        if (pendingGrade != null && !pendingGrade.isDone()) {
-            pendingGrade.cancel(false);
-        }
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
-                scheduler.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
     }
 }
