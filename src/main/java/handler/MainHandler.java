@@ -4,20 +4,19 @@ import domain.GameState;
 import domain.Profile;
 import lombok.RequiredArgsConstructor;
 import repository.ProfileRepository;
+import tools.SecretPhaseUnlocker;
 import ui.view.main.MainMenuData;
 import ui.view.main.MainMenuData.LevelInfo;
 import ui.view.main.MainView;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class MainHandler implements StateHandler {
-    private static final List<Integer> SECRET_PHASE_KEY = List.of(1, 1, 2, 3, 5, 8, 13);
-
     private final MainView view;
     private final ProfileRepository profileRepository;
+    private final SecretPhaseUnlocker secretPhaseUnlocker;
 
     private Profile currentProfile;
 
@@ -90,31 +89,14 @@ public class MainHandler implements StateHandler {
 
     private void checkSecretPhaseUnlock() {
         if (currentProfile.isSecretUnlocked()) {
-            return;  // 이미 해금됨
+            return;
         }
 
         try {
             Class<?> level5Class = Class.forName("solutions.level5.Level5");
-            Method doNotTouchMethod = level5Class.getMethod("doNotTouch");
-            Object result = doNotTouchMethod.invoke(null);
-
-            if (result instanceof List<?> list && list.equals(SECRET_PHASE_KEY)) {
-                currentProfile.unlockSecret();
-                profileRepository.save(currentProfile);
-
-                // 해금 연출
-                System.out.println();
-                System.out.println("██████████████████████████████████████");
-                System.out.println("█                                    █");
-                System.out.println("█   ░░░ HIDDEN SEQUENCE DETECTED ░░░ █");
-                System.out.println("█                                    █");
-                System.out.println("██████████████████████████████████████");
-                System.out.println();
-                System.out.println("🔓 Secret Phase 해금!");
-                System.out.println();
-            }
-        } catch (Exception e) {
-            // Level5 클래스 로드 실패 시 무시
+            secretPhaseUnlocker.tryUnlock(level5Class, currentProfile);
+        } catch (ClassNotFoundException e) {
+            // Level5 클래스 없으면 무시
         }
     }
 }

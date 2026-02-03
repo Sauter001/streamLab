@@ -8,6 +8,7 @@ import handler.SecretHandler;
 import handler.TutorialHandler;
 import repository.LevelDataRepository;
 import repository.ProfileRepository;
+import tools.SecretPhaseUnlocker;
 import ui.view.common.CommonConsoleView;
 import ui.view.level.LevelConsoleView;
 import ui.view.main.MainConsoleView;
@@ -29,7 +30,8 @@ public class HandlerConfig {
     }
 
     public static MainHandler createMainHandler() {
-        return new MainHandler(new MainConsoleView(), new ProfileRepository());
+        ProfileRepository profileRepository = new ProfileRepository();
+        return new MainHandler(new MainConsoleView(), profileRepository, new SecretPhaseUnlocker(profileRepository));
     }
 
     public static LevelHandler createLevelHandler() {

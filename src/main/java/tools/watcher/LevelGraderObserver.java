@@ -5,6 +5,7 @@ import constants.LevelConstants;
 import context.GameContext;
 import domain.Profile;
 import repository.ProfileRepository;
+import tools.SecretPhaseUnlocker;
 import tools.grader.level.LevelGrader;
 import tools.grader.level.LevelTestData;
 import ui.view.grading.LevelGradingView;
@@ -12,7 +13,6 @@ import ui.view.grading.LevelGradingView.ProblemGradeResult;
 import util.ErrorLogger;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,6 @@ public class LevelGraderObserver extends AbstractGraderObserver {
     private static final String SOLUTION_CLASS_PATTERN = "solutions.level%d.Level%d";
     private static final String TEST_DATA_PATTERN = "data/test-data/level%d/level%d.json";
     private static final String LEVEL_FILE_PATTERN = "Level%d.java";
-    private static final List<Integer> FIBONACCI_7 = List.of(1, 1, 2, 3, 5, 8, 13);
 
     // Secret Phase (Level 6) 전용 경로
     private static final String SECRET_SOLUTION_CLASS = "solutions.secret.LevelSecret";
@@ -33,6 +32,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
     private final LevelGradingView view;
     private final GameContext gameContext;
     private final ProfileRepository profileRepository;
+    private final SecretPhaseUnlocker secretPhaseUnlocker;
 
     public LevelGraderObserver(int level, LevelGradingView view, GameContext gameContext, ProfileRepository profileRepository) {
         super(
@@ -43,6 +43,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
         this.view = view;
         this.gameContext = gameContext;
         this.profileRepository = profileRepository;
+        this.secretPhaseUnlocker = new SecretPhaseUnlocker(profileRepository);
 
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -94,7 +95,10 @@ public class LevelGraderObserver extends AbstractGraderObserver {
 
             // Level 5는 항상 Secret Phase 해금 체크 (나중에 구현해도 해금 가능)
             if (level == LevelConstants.MAX_LEVEL) {
-                checkSecretPhaseUnlock(solutionClass);
+                Profile profile = profileRepository.load().orElse(null);
+                if (profile != null) {
+                    secretPhaseUnlocker.tryUnlock(solutionClass, profile);
+                }
             }
 
         } catch (ClassNotFoundException e) {
@@ -109,32 +113,4 @@ public class LevelGraderObserver extends AbstractGraderObserver {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void checkSecretPhaseUnlock(Class<?> solutionClass) {
-        try {
-            Method doNotTouchMethod = solutionClass.getMethod("doNotTouch");
-            Object result = doNotTouchMethod.invoke(null);
-
-            if (result instanceof List<?> list && list.equals(FIBONACCI_7)) {
-                Profile profile = profileRepository.load().orElse(null);
-                if (profile != null && !profile.isSecretUnlocked()) {
-                    profile.unlockSecret();
-                    profileRepository.save(profile);
-
-                    // 해금 연출
-                    System.out.println();
-                    System.out.println("██████████████████████████████████████");
-                    System.out.println("█                                    █");
-                    System.out.println("█   ░░░ HIDDEN SEQUENCE DETECTED ░░░ █");
-                    System.out.println("█                                    █");
-                    System.out.println("██████████████████████████████████████");
-                    System.out.println();
-                    System.out.println("🔓 Secret Phase 해금!");
-                    System.out.println();
-                }
-            }
-        } catch (Exception e) {
-            // doNotTouch 메서드 호출 실패 시 무시
-        }
-    }
 }
