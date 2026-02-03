@@ -1,5 +1,6 @@
 package context;
 
+import constants.LevelConstants;
 import domain.GameState;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +30,7 @@ public class GameContext {
     private final Map<Integer, Boolean> levelCompletedMap = new ConcurrentHashMap<>();
     @Setter
     @Getter
-    private int currentLevel = 1;
+    private int currentLevel = LevelConstants.INITIAL_LEVEL;
 
     public GameContext() {
         this.fileWatcher = new FileWatcher(Paths.get("src/main/java/solutions"));

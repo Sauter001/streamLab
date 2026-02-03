@@ -2,6 +2,7 @@ package repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import constants.LevelConstants;
 import ui.view.level.LevelView.ProblemSummary;
 
 import java.io.IOException;
@@ -14,11 +15,10 @@ import java.util.List;
 public class LevelDataRepository {
     private static final String DATA_PATH = "data/test-data/level%d/level%d.json";
     private static final String SECRET_DATA_PATH = "data/test-data/secret/secret.json";
-    private static final int SECRET_LEVEL = 6;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<ProblemSummary> loadProblemSummaries(int level) {
-        Path path = level == SECRET_LEVEL
+        Path path = level == LevelConstants.SECRET_LEVEL
                 ? Paths.get(SECRET_DATA_PATH)
                 : Paths.get(String.format(DATA_PATH, level, level));
 

@@ -1,5 +1,6 @@
 package handler;
 
+import constants.LevelConstants;
 import context.GameContext;
 import domain.GameState;
 import domain.Profile;
@@ -16,8 +17,6 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class SecretHandler implements StateHandler {
-    private static final int SECRET_LEVEL = 6;
-
     private final SecretView view;
     private final LevelDataRepository levelDataRepository;
     private final ProfileRepository profileRepository;
@@ -35,7 +34,7 @@ public class SecretHandler implements StateHandler {
         // GameContext에 Secret Level 설정 후 Observer 등록
         GameContext context = GameState.getContext();
         if (context != null) {
-            context.setCurrentLevel(SECRET_LEVEL);
+            context.setCurrentLevel(LevelConstants.SECRET_LEVEL);
             context.setupLevelObserver();
         }
 
@@ -59,7 +58,7 @@ public class SecretHandler implements StateHandler {
     private List<ProblemSummary> loadSecretProblemSummaries() {
         // LevelDataRepository를 활용하여 secret.json에서 로드
         // level 6으로 처리
-        var summaries = levelDataRepository.loadProblemSummaries(SECRET_LEVEL);
+        var summaries = levelDataRepository.loadProblemSummaries(LevelConstants.SECRET_LEVEL);
         return summaries.stream()
                 .map(s -> new ProblemSummary(s.id(), s.name(), s.description(), s.solved()))
                 .toList();
@@ -71,7 +70,7 @@ public class SecretHandler implements StateHandler {
 
         while (true) {
             // Secret Phase 완료 체크
-            if (context != null && context.isLevelCompleted(SECRET_LEVEL)) {
+            if (context != null && context.isLevelCompleted(LevelConstants.SECRET_LEVEL)) {
                 return handleSecretComplete(reader);
             }
 
@@ -103,7 +102,7 @@ public class SecretHandler implements StateHandler {
     private GameState handleSecretComplete(BufferedReader reader) {
         // Profile 업데이트 (Secret 완료 표시)
         Profile profile = profileRepository.load().orElseThrow();
-        profile.passLevel(SECRET_LEVEL);
+        profile.passLevel(LevelConstants.SECRET_LEVEL);
         profileRepository.save(profile);
 
         view.showSecretCompleteOptions();

@@ -10,6 +10,8 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ProfileHandler implements StateHandler {
+    private static final int MAX_USERNAME_LENGTH = 20;
+
     private final ProfileView view;
     private final ProfileRepository repository;
 
@@ -54,8 +56,8 @@ public class ProfileHandler implements StateHandler {
                 view.showNameError("이름을 입력해주세요.");
                 continue;
             }
-            if (userName.length() > 20) {
-                view.showNameError("이름은 20자 이하로 입력해주세요.");
+            if (userName.length() > MAX_USERNAME_LENGTH) {
+                view.showNameError("이름은 " + MAX_USERNAME_LENGTH + "자 이하로 입력해주세요.");
                 continue;
             }
             break;

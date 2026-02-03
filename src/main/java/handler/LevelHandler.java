@@ -1,5 +1,6 @@
 package handler;
 
+import constants.LevelConstants;
 import context.GameContext;
 import domain.GameState;
 import domain.Profile;
@@ -17,8 +18,6 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class LevelHandler implements StateHandler {
-    private static final int MAX_LEVEL = 5;
-
     private final LevelView view;
     private final LevelDataRepository levelDataRepository;
     private final ProfileRepository profileRepository;
@@ -29,7 +28,7 @@ public class LevelHandler implements StateHandler {
         int currentLevel = profile.getCurrentLevel();
 
         // 마지막 레벨 완료 후 LEVEL 진입 방지
-        if (currentLevel > MAX_LEVEL) {
+        if (currentLevel > LevelConstants.MAX_LEVEL) {
             System.out.println("모든 레벨을 완료했습니다! 메인 화면으로 돌아갑니다.");
             System.out.println();
             return GameState.MAIN;
@@ -111,7 +110,7 @@ public class LevelHandler implements StateHandler {
                 if (input != null) {
                     String cmd = input.trim().toLowerCase();
                     if (cmd.equals("1") || cmd.equals("n") || cmd.equals("next")) {
-                        if (completedLevel < MAX_LEVEL) {
+                        if (completedLevel < LevelConstants.MAX_LEVEL) {
                             return GameState.LEVEL;  // 다음 레벨로 (Profile.currentLevel이 이미 증가됨)
                         }
                         // 마지막 레벨이면 무시

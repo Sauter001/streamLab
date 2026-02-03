@@ -1,12 +1,14 @@
 package ui.view.main;
 
+import static constants.OutputConstants.BORDER_WIDTH;
+
 import util.Console;
 
 import java.util.List;
 
 public class MainConsoleView implements MainView {
 
-    private static final String BORDER = "═".repeat(50);
+    private static final String BORDER = "═".repeat(BORDER_WIDTH);
 
     @Override
     public void showMainMenu(MainMenuData data) {

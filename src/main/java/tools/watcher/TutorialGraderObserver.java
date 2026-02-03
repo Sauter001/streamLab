@@ -18,6 +18,7 @@ import java.util.List;
 public class TutorialGraderObserver extends AbstractGraderObserver {
     private static final String TUTORIAL_CLASS = "solutions.tutorial.Tutorial";
     private static final String TEST_DATA_PATH = "data/test-data/tutorial/tutorial.json";
+    private static final int TUTORIAL_MAX_SCORE = 5;
     public static final String TUTORIAL_JAVA_FILE = "Tutorial.java";
 
     private final TutorialTestData testData;
@@ -73,7 +74,7 @@ public class TutorialGraderObserver extends AbstractGraderObserver {
         view.displayMethodHeader(methodTest.getName(), methodTest.getDescription());
 
         try {
-            TutorialGrader grader = new TutorialGrader(validator, 5);
+            TutorialGrader grader = new TutorialGrader(validator, TUTORIAL_MAX_SCORE);
 
             TutorialGrader.GradeResult gradeResult = grader.gradeMethod(sourceFile, methodTest.getName());
 

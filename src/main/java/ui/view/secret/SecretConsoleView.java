@@ -1,5 +1,7 @@
 package ui.view.secret;
 
+import static constants.OutputConstants.BORDER_WIDTH;
+
 import constants.OutputConstants;
 import util.Console;
 
@@ -20,10 +22,10 @@ public class SecretConsoleView implements SecretView {
 
     private void printSecretHeader() {
         System.out.println();
-        System.out.println("░".repeat(50));
+        System.out.println("░".repeat(BORDER_WIDTH));
         System.out.println("░  ▓▓▓ SECRET PHASE ▓▓▓                          ░");
         System.out.println("░  Beyond the Stream                             ░");
-        System.out.println("░".repeat(50));
+        System.out.println("░".repeat(BORDER_WIDTH));
         System.out.println();
         System.out.println("축하합니다. 숨겨진 영역에 도달했습니다.");
         System.out.println("이곳의 문제들은 Stream API의 한계를 시험합니다.");
@@ -88,11 +90,11 @@ public class SecretConsoleView implements SecretView {
     @Override
     public void showSecretCompleteOptions() {
         System.out.println();
-        System.out.println("▓".repeat(50));
+        System.out.println("▓".repeat(BORDER_WIDTH));
         System.out.println("▓                                                ▓");
         System.out.println("▓     ★ SECRET PHASE COMPLETE ★                ▓");
         System.out.println("▓                                                ▓");
-        System.out.println("▓".repeat(50));
+        System.out.println("▓".repeat(BORDER_WIDTH));
         System.out.println();
         System.out.println("  Stream Master의 칭호를 획득했습니다!");
         System.out.println();

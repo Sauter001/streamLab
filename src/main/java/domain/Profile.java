@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import constants.LevelConstants;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,7 +30,7 @@ public class Profile {
                 .tutorialSkipped(false)
                 .levelDialogueShown(new HashMap<>())
                 .passedLevels(new HashSet<>())
-                .currentLevel(1)
+                .currentLevel(LevelConstants.INITIAL_LEVEL)
                 .secretUnlocked(false)
                 .build();
     }

@@ -1,6 +1,7 @@
 package tools.watcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import constants.LevelConstants;
 import context.GameContext;
 import domain.Profile;
 import repository.ProfileRepository;
@@ -22,7 +23,6 @@ public class LevelGraderObserver extends AbstractGraderObserver {
     private static final List<Integer> FIBONACCI_7 = List.of(1, 1, 2, 3, 5, 8, 13);
 
     // Secret Phase (Level 6) 전용 경로
-    private static final int SECRET_LEVEL = 6;
     private static final String SECRET_SOLUTION_CLASS = "solutions.secret.LevelSecret";
     private static final String SECRET_TEST_DATA_PATH = "data/test-data/secret/secret.json";
     private static final String SECRET_FILE_NAME = "LevelSecret.java";
@@ -35,7 +35,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
 
     public LevelGraderObserver(int level, LevelGradingView view, GameContext gameContext, ProfileRepository profileRepository) {
         super(
-                level == SECRET_LEVEL ? SECRET_FILE_NAME : String.format(LEVEL_FILE_PATTERN, level),
+                level == LevelConstants.SECRET_LEVEL ? SECRET_FILE_NAME : String.format(LEVEL_FILE_PATTERN, level),
                 "LevelGraderScheduler-" + level
         );
         this.level = level;
@@ -45,7 +45,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            String testDataPath = level == SECRET_LEVEL
+            String testDataPath = level == LevelConstants.SECRET_LEVEL
                     ? SECRET_TEST_DATA_PATH
                     : String.format(TEST_DATA_PATTERN, level, level);
             this.testData = mapper.readValue(new File(testDataPath), LevelTestData.class);
@@ -69,7 +69,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
                 return;
             }
 
-            String className = level == SECRET_LEVEL
+            String className = level == LevelConstants.SECRET_LEVEL
                     ? SECRET_SOLUTION_CLASS
                     : String.format(SOLUTION_CLASS_PATTERN, level, level);
             Class<?> solutionClass = loadClass(className);
@@ -92,7 +92,7 @@ public class LevelGraderObserver extends AbstractGraderObserver {
             }
 
             // Level 5는 항상 Secret Phase 해금 체크 (나중에 구현해도 해금 가능)
-            if (level == 5) {
+            if (level == LevelConstants.MAX_LEVEL) {
                 checkSecretPhaseUnlock(solutionClass);
             }
 

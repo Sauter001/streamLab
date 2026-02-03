@@ -2,6 +2,7 @@ package tools.grader.level;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import constants.LevelConstants;
 import domain.AnalysisContext;
 import domain.tools.GoldbachToolbox;
 import domain.tools.GoldbachToolboxImpl;
@@ -68,11 +69,11 @@ public class LevelGrader {
     }
 
     private CompositeValidator getValidatorByLevel() {
-        if (this.level <= 3) {
+        if (this.level <= LevelConstants.STRICT_VALIDATOR_MAX_LEVEL) {
             return ViolationFactory.createStrictestValidator();
         }
 
-        if (this.level <= 5) {
+        if (this.level <= LevelConstants.MAX_LEVEL) {
             return ViolationFactory.createBlockLambdaAllowedValidator();
         }
 

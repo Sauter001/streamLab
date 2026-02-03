@@ -1,5 +1,8 @@
 package ui.view.level;
 
+import static constants.OutputConstants.BORDER_WIDTH;
+
+import constants.LevelConstants;
 import constants.OutputConstants;
 import domain.level.LevelInfo;
 import util.Console;
@@ -8,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class LevelConsoleView implements LevelView {
-
-    private static final int MAX_LEVEL = 5;
 
     // Secret Phase 힌트용 Hex 코드
     private static final Map<Integer, String> LEVEL_SECRET_PIECES = Map.of(
@@ -33,9 +34,9 @@ public class LevelConsoleView implements LevelView {
 
     private void printLevelHeader(LevelInfo levelInfo) {
         System.out.println();
-        System.out.println("═".repeat(50));
+        System.out.println("═".repeat(BORDER_WIDTH));
         System.out.printf("  %s%n", levelInfo.title());
-        System.out.println("═".repeat(50));
+        System.out.println("═".repeat(BORDER_WIDTH));
         System.out.println();
         System.out.println(levelInfo.description());
         System.out.println();
@@ -97,9 +98,9 @@ public class LevelConsoleView implements LevelView {
     @Override
     public void showLevelCompleteOptions(int completedLevel) {
         System.out.println();
-        System.out.println("═".repeat(50));
+        System.out.println("═".repeat(BORDER_WIDTH));
         System.out.printf("  🎉 Level %d 완료!%n", completedLevel);
-        System.out.println("═".repeat(50));
+        System.out.println("═".repeat(BORDER_WIDTH));
 
         // Secret Phase 힌트 출력
         String secretPiece = LEVEL_SECRET_PIECES.get(completedLevel);
@@ -108,7 +109,7 @@ public class LevelConsoleView implements LevelView {
         }
 
         System.out.println();
-        if (completedLevel < MAX_LEVEL) {
+        if (completedLevel < LevelConstants.MAX_LEVEL) {
             System.out.println("  1. [N] 다음 레벨로 (Level " + (completedLevel + 1) + ")");
             System.out.println("  2. [M] 메인 화면으로");
         } else {
