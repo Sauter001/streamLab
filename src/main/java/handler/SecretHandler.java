@@ -84,11 +84,14 @@ public class SecretHandler extends BaseGameLevelHandler {
         view.showSecretCompleteOptions();
 
         while (true) {
-            String cmd = readCommand(reader);
-            if (cmd != null && isMainCommand(cmd)) {
+            if (isMainCommand(readCommand(reader))) {
                 return GameState.MAIN;
             }
         }
+    }
+
+    private boolean isMainCommand(String cmd) {
+        return cmd != null && (cmd.equals("m") || cmd.equals("main"));
     }
 
     private List<ProblemSummary> loadSecretProblemSummaries() {
@@ -105,9 +108,5 @@ public class SecretHandler extends BaseGameLevelHandler {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private boolean isMainCommand(String cmd) {
-        return cmd.equals("m") || cmd.equals("main");
     }
 }

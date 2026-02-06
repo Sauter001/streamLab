@@ -8,6 +8,7 @@ import domain.tools.SetToolbox;
 import domain.tools.SetToolboxImpl;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * 테스트 케이스 실행 클래스
@@ -17,12 +18,10 @@ import java.lang.reflect.Method;
 public class TestExecutor {
 
     public Method findMethod(Class<?> clazz, String methodName) throws NoSuchMethodException {
-        for (Method method : clazz.getMethods()) {
-            if (method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        throw new NoSuchMethodException("Method not found: " + methodName);
+        return Arrays.stream(clazz.getMethods())
+                .filter(m -> m.getName().equals(methodName))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchMethodException("Method not found: " + methodName));
     }
 
     public Object invokeWithToolbox(Method method, Object input, String toolboxType) throws Exception {

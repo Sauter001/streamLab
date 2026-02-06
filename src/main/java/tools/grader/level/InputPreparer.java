@@ -103,10 +103,14 @@ public class InputPreparer {
 
         Set<Integer> result = new HashSet<>();
         for (Object item : list) {
-            if (item instanceof Number) {
-                result.add(((Number) item).intValue());
-            }
+            addIfNumber(result, item);
         }
         return result;
+    }
+
+    private void addIfNumber(Set<Integer> set, Object item) {
+        if (item instanceof Number number) {
+            set.add(number.intValue());
+        }
     }
 }

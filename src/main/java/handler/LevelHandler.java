@@ -95,18 +95,24 @@ public class LevelHandler extends BaseGameLevelHandler {
         view.showLevelCompleteOptions(completedLevel);
 
         while (true) {
-            String cmd = readCommand(reader);
-            if (cmd == null) {
-                continue;
-            }
-
-            if (isNextLevelCommand(cmd) && completedLevel < LevelConstants.MAX_LEVEL) {
-                return GameState.LEVEL;
-            }
-            if (isMainCommand(cmd)) {
-                return GameState.MAIN;
+            GameState result = processCompleteCommand(readCommand(reader), completedLevel);
+            if (result != null) {
+                return result;
             }
         }
+    }
+
+    private GameState processCompleteCommand(String cmd, int completedLevel) {
+        if (cmd == null) {
+            return null;
+        }
+        if (isNextLevelCommand(cmd) && completedLevel < LevelConstants.MAX_LEVEL) {
+            return GameState.LEVEL;
+        }
+        if (isMainCommand(cmd)) {
+            return GameState.MAIN;
+        }
+        return null;
     }
 
     private String readCommand(BufferedReader reader) {

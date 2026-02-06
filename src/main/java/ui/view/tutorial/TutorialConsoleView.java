@@ -99,16 +99,9 @@ public class TutorialConsoleView implements TutorialView {
             }
 
             // 논블로킹 입력 체크
-            try {
-                if (reader.ready()) {
-                    String input = reader.readLine();
-                    if (input != null && isExitCommand(input.trim().toLowerCase())) {
-                        System.out.println("튜토리얼을 종료합니다.");
-                        break;
-                    }
-                }
-            } catch (IOException e) {
-                // 입력 읽기 실패 시 무시
+            if (checkForExitCommand(reader)) {
+                System.out.println("튜토리얼을 종료합니다.");
+                break;
             }
 
             // CPU 과부하 방지
@@ -130,6 +123,18 @@ public class TutorialConsoleView implements TutorialView {
             Thread.sleep(OutputConstants.SHORT_DIALOGUE_TIME);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private boolean checkForExitCommand(BufferedReader reader) {
+        try {
+            if (!reader.ready()) {
+                return false;
+            }
+            String input = reader.readLine();
+            return input != null && isExitCommand(input.trim().toLowerCase());
+        } catch (IOException e) {
+            return false;
         }
     }
 
